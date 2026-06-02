@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V12 · Июнь Health App</title>
+<meta name="theme-color" content="#ef7fb4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Июнь Health">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<style>
+:root{
+  --bg:#fff7fb;--bg2:#f2fff3;--ink:#2d2430;--muted:#746879;--card:#fff;
+  --pink:#ef7fb4;--pink2:#ffe1ef;--green:#6fba75;--green2:#e6f8e5;
+  --blue:#6fa8ff;--blue2:#e4f0ff;--yellow:#ffd76a;--yellow2:#fff3c7;
+  --lav:#ad8cff;--lav2:#f1eaff;--red:#d65f73;--red2:#ffe5ea;--orange:#f4a04e;
+  --line:#f1dce8;--shadow:0 12px 32px rgba(121,72,103,.14);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background:radial-gradient(circle at 8% 0%,#ffddec 0,transparent 30%),
+             radial-gradient(circle at 90% 8%,#dcffe0 0,transparent 28%),
+             linear-gradient(135deg,var(--bg),var(--bg2) 48%,#f7f0ff);
+  line-height:1.5;
+}
+header{padding:30px 18px 22px;background:linear-gradient(135deg,#ffd8ea,#e7ffe8 58%,#efe8ff);border-bottom:1px solid var(--line)}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:30px;line-height:1.12;margin:0 0 8px} header p{margin:0;color:var(--muted)}
+nav{position:sticky;top:0;z-index:10;display:flex;gap:8px;overflow:auto;padding:10px max(10px,calc((100vw - 1180px)/2 + 10px));background:rgba(255,247,251,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav a{flex:0 0 auto;text-decoration:none;color:var(--ink);font-weight:800;font-size:14px;padding:9px 13px;border-radius:999px;background:#fff;border:1px solid var(--line);box-shadow:0 4px 12px rgba(121,72,103,.08)}
+main{max-width:1180px;margin:0 auto;padding:14px}
+section{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:18px;margin:14px 0;overflow:hidden}
+h2{font-size:23px;margin:0 0 14px} h3{font-size:18px;margin:16px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:linear-gradient(135deg,#fff,#fff7fb);border:1px solid var(--line);border-radius:20px;padding:14px;min-height:96px}
+.card.green{background:linear-gradient(135deg,#fff,#efffee)}.card.blue{background:linear-gradient(135deg,#fff,#eff7ff)}.card.yellow{background:linear-gradient(135deg,#fff,#fff8dc)}.card.lav{background:linear-gradient(135deg,#fff,#f5f0ff)}.card.red{background:linear-gradient(135deg,#fff,#fff0f0)}
+.badge{display:inline-block;padding:6px 11px;border-radius:999px;font-weight:900;font-size:13px;background:var(--pink2);color:#a53d70;margin-bottom:9px}
+.badge.green{background:var(--green2);color:#36743b}.badge.blue{background:var(--blue2);color:#366dab}.badge.yellow{background:var(--yellow2);color:#856313}.badge.red{background:var(--red2);color:#ad4156}.badge.lav{background:var(--lav2);color:#6845b6}
+.big{font-size:27px;font-weight:950;margin-bottom:6px}.muted{color:var(--muted)}.small{font-size:12px;color:var(--muted)}
+.note{border-left:5px solid var(--pink);padding:12px 14px;border-radius:16px;background:#fff8fc;color:#60465a}
+button{border:0;border-radius:999px;padding:11px 15px;margin:4px 4px 4px 0;cursor:pointer;color:#fff;font-weight:950;background:linear-gradient(135deg,var(--pink),#e866a5);box-shadow:0 8px 18px rgba(239,127,180,.22)}
+button.green{background:linear-gradient(135deg,#78ca78,#4fa95f)}button.blue{background:linear-gradient(135deg,#79afff,#5a8ee8)}button.yellow{background:linear-gradient(135deg,#ffd76a,#f4a04e)}button.gray{background:linear-gradient(135deg,#9b8f99,#766d76)}button.red{background:linear-gradient(135deg,#e57588,#c94c61)}
+.calendarScroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;scrollbar-color:#ef7fb4 #fff0f7}
+.calendar{display:grid;grid-template-columns:repeat(7,minmax(92px,1fr));gap:8px;min-width:700px}
+.dow{text-align:center;font-weight:950;color:#8b6b84;font-size:12px}
+.day{min-height:88px;padding:8px;border-radius:18px;background:#fff;border:2px solid #f2ddea;cursor:pointer;box-shadow:0 5px 14px rgba(121,72,103,.08);transition:.15s;color:var(--ink);text-align:left}
+.day:hover{transform:translateY(-2px)}.day strong{font-size:18px}.day.selected{outline:4px solid rgba(239,127,180,.4);border-color:var(--pink)}.day.train{border-color:#9cc7ff}.day.f1{background:#f3fff2}.day.f2{background:#fff8df}.day.f3{background:#fff0f0}
+.pill{display:inline-block;margin:4px 3px 0 0;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:900;background:#f0e9f0;color:#4d424d}.pill.green{background:var(--green2);color:#36743b}.pill.blue{background:var(--blue2);color:#366dab}.pill.yellow{background:var(--yellow2);color:#856313}.pill.red{background:var(--red2);color:#ad4156}.pill.lav{background:var(--lav2);color:#6845b6}
+.timeline{display:grid;gap:8px}.rowtime{display:grid;grid-template-columns:88px 1fr;gap:12px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px}.time{font-weight:950;color:#dc6ca4}
+label.row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}input[type=checkbox]{width:21px;height:21px;accent-color:var(--pink);flex:0 0 auto;margin-top:2px}
+input,select,textarea{width:100%;padding:10px;border-radius:14px;border:1px solid var(--line);font:inherit;background:#fff;margin-top:5px}textarea{min-height:78px}
+.result{white-space:pre-wrap;background:#fff;border:1px dashed #e7a3c5;border-radius:16px;padding:13px;margin-top:10px}
+.progress{height:16px;background:#f2e5ed;border-radius:999px;overflow:hidden;margin:9px 0}.bar{height:100%;width:0;background:linear-gradient(90deg,#8bd8c6,#70b970)}
+.bar.pink{background:linear-gradient(90deg,#ffd1e4,#ef7fb4)}.bar.yellow{background:linear-gradient(90deg,#fff0b0,#ffd76a)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{padding:7px 11px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:14px;font-weight:800}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#fff0f7}
+.moodBtns button{font-size:20px;padding:12px 16px}.miniChart{display:grid;grid-template-columns:repeat(30,1fr);gap:3px;margin-top:10px}.dot{height:20px;border-radius:6px;background:#f0e9f0;text-align:center;font-size:12px;line-height:20px}.dot.good{background:#dff6df}.dot.mid{background:#fff0b9}.dot.bad{background:#ffe0e6}
+.canvasWrap{overflow:auto}.chart{width:100%;min-width:420px;height:190px;background:#fff;border:1px solid var(--line);border-radius:16px}
+.inventoryItem{display:grid;grid-template-columns:1fr 80px auto;gap:8px;align-items:center;margin:8px 0}
+
+.scaleLabel{display:block;margin:10px 0;font-weight:800}
+.scaleHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px}
+.scaleValue{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:42px;height:30px;padding:4px 10px;border-radius:999px;
+  background:linear-gradient(135deg,#ffe1ef,#ef7fb4);color:#fff;font-weight:950;
+  box-shadow:0 6px 14px rgba(239,127,180,.22)
+}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:6px 0 2px
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:12px;border-radius:999px;background:linear-gradient(90deg,#e6f8e5,#ffe1ef,#f1eaff);border:1px solid var(--line)
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:28px;height:28px;border-radius:50%;
+  background:#ef7fb4;border:3px solid #fff;box-shadow:0 4px 12px rgba(121,72,103,.28);margin-top:-9px
+}
+input[type=range]::-moz-range-track{
+  height:12px;border-radius:999px;background:linear-gradient(90deg,#e6f8e5,#ffe1ef,#f1eaff);border:1px solid var(--line)
+}
+input[type=range]::-moz-range-thumb{
+  width:28px;height:28px;border-radius:50%;background:#ef7fb4;border:3px solid #fff;box-shadow:0 4px 12px rgba(121,72,103,.28)
+}
+.scaleTicks{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-weight:700}
+
+
+.screenHero{
+  background:linear-gradient(135deg,#fff,#fff0f7 42%,#efffee);
+  border:2px solid #f1dce8;
+  box-shadow:0 18px 42px rgba(121,72,103,.14);
+}
+.screenHero h2{font-size:26px;margin-bottom:6px}
+.screenHero p{margin:0;color:var(--muted);font-weight:750}
+.quickGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:10px;
+}
+.quickBtn{
+  display:flex;align-items:center;justify-content:center;
+  min-height:58px;padding:12px;border-radius:18px;
+  background:linear-gradient(135deg,#fff,#fff0f7);
+  border:1px solid var(--line);
+  color:var(--ink);text-decoration:none;font-weight:950;
+  box-shadow:0 8px 18px rgba(121,72,103,.08);
+}
+.quickBtn.food{background:linear-gradient(135deg,#fff8dc,#ffffff)}
+.quickBtn.danger{background:linear-gradient(135deg,#ffe5ea,#ffffff)}
+#calendar{margin-top:10px}
+#menu{border:2px solid #ffd76a}
+#meds{border:2px solid #ffe1ef}
+
+@media(max-width:760px){h1{font-size:25px}main{padding:10px}section{padding:14px;border-radius:20px}.two{grid-template-columns:1fr}.calendar{gap:5px;min-width:680px}.day{min-height:76px;border-radius:14px;padding:6px}.day strong{font-size:15px}.pill{font-size:10px;padding:2px 5px}.rowtime{grid-template-columns:74px 1fr}.miniChart{grid-template-columns:repeat(15,1fr)}.inventoryItem{grid-template-columns:1fr 70px}}
+@media print{nav,button{display:none}body{background:#fff}section{box-shadow:none;break-inside:avoid}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>🥰 V12 · Июнь Health App</h1>
+  <p>Версия V12: сначала календарь и ежедневные отметки, потом еда, затем аналитика и справка. Сделано для быстрого использования с телефона.</p>
+</div></header>
+
+<nav class="appTabs">
+  <a href="#calendar">📅 Календарь</a>
+  <a href="#plan">🕒 План</a>
+  <a href="#meds">💊 Таблетки</a>
+  <a href="#track">📊 Симптомы</a>
+  <a href="#menu">🍽️ Еда</a>
+  <a href="#shop">🛒 Покупки</a>
+  <a href="#pcos">🌸 Цикл</a>
+  <a href="#badgut">😣 ЖКТ плохо</a>
+  <a href="#wins">🏆 Итоги</a>
+  <a href="#rules">📌 Правила</a>
+</nav>
+
+<main>
+<section class="screenHero">
+  <h2>1. 📅 Сначала выбери день</h2>
+  <p>Календарь — в самом верху. Выбор даты обновляет план, таблетки, симптомы и отметки.</p>
+</section>
+
+<section id="calendar">
+  <h2>📆 Календарь июня 2026</h2>
+  <p class="note">Календарь фиксирован на июнь 2026. Синим отмечены тренировки, цветом — этап отмены Форлакса. Клик по дню меняет весь дашборд.</p>
+  <div class="calendarScroll"><div class="calendar" id="cal">
+<div class="dow">Пн</div><div class="dow">Вт</div><div class="dow">Ср</div><div class="dow">Чт</div><div class="dow">Пт</div><div class="dow">Сб</div><div class="dow">Вс</div><button class="day f1 selected" data-day="1" type="button">
+<strong>1</strong><br><span class="small">понедельник</span><br><span class="pill green">Форлакс</span>
+</button><button class="day f1" data-day="2" type="button">
+<strong>2</strong><br><span class="small">вторник</span><br><span class="pill green">Форлакс</span>
+</button><button class="day f1 train" data-day="3" type="button">
+<strong>3</strong><br><span class="small">среда</span><br><span class="pill green">Форлакс</span><span class="pill blue">тренировка</span>
+</button><button class="day f1" data-day="4" type="button">
+<strong>4</strong><br><span class="small">четверг</span><br><span class="pill green">Форлакс</span>
+</button><button class="day f1" data-day="5" type="button">
+<strong>5</strong><br><span class="small">пятница</span><br><span class="pill green">Форлакс</span>
+</button><button class="day f1 train" data-day="6" type="button">
+<strong>6</strong><br><span class="small">суббота</span><br><span class="pill green">Форлакс</span><span class="pill blue">тренировка</span>
+</button><button class="day f1 train" data-day="7" type="button">
+<strong>7</strong><br><span class="small">воскресенье</span><br><span class="pill green">Форлакс</span><span class="pill blue">тренировка</span>
+</button><button class="day f1" data-day="8" type="button">
+<strong>8</strong><br><span class="small">понедельник</span><br><span class="pill green">Форлакс</span>
+</button><button class="day f1" data-day="9" type="button">
+<strong>9</strong><br><span class="small">вторник</span><br><span class="pill green">Форлакс</span>
+</button><button class="day f1 train" data-day="10" type="button">
+<strong>10</strong><br><span class="small">среда</span><br><span class="pill green">Форлакс</span><span class="pill blue">тренировка</span>
+</button><button class="day f1" data-day="11" type="button">
+<strong>11</strong><br><span class="small">четверг</span><br><span class="pill green">Форлакс</span>
+</button><button class="day f1" data-day="12" type="button">
+<strong>12</strong><br><span class="small">пятница</span><br><span class="pill green">Форлакс</span>
+</button><button class="day f1 train" data-day="13" type="button">
+<strong>13</strong><br><span class="small">суббота</span><br><span class="pill green">Форлакс</span><span class="pill blue">тренировка</span>
+</button><button class="day f1 train" data-day="14" type="button">
+<strong>14</strong><br><span class="small">воскресенье</span><br><span class="pill green">Форлакс</span><span class="pill blue">тренировка</span>
+</button><button class="day f2" data-day="15" type="button">
+<strong>15</strong><br><span class="small">понедельник</span><br><span class="pill yellow">Форлакс</span>
+</button><button class="day f2" data-day="16" type="button">
+<strong>16</strong><br><span class="small">вторник</span><br><span class="pill red">без Форлакса</span>
+</button><button class="day f2 train" data-day="17" type="button">
+<strong>17</strong><br><span class="small">среда</span><br><span class="pill yellow">Форлакс</span><span class="pill blue">тренировка</span>
+</button><button class="day f2" data-day="18" type="button">
+<strong>18</strong><br><span class="small">четверг</span><br><span class="pill red">без Форлакса</span>
+</button><button class="day f2" data-day="19" type="button">
+<strong>19</strong><br><span class="small">пятница</span><br><span class="pill yellow">Форлакс</span>
+</button><button class="day f2 train" data-day="20" type="button">
+<strong>20</strong><br><span class="small">суббота</span><br><span class="pill red">без Форлакса</span><span class="pill blue">тренировка</span>
+</button><button class="day f2 train" data-day="21" type="button">
+<strong>21</strong><br><span class="small">воскресенье</span><br><span class="pill yellow">Форлакс</span><span class="pill blue">тренировка</span>
+</button><button class="day f3" data-day="22" type="button">
+<strong>22</strong><br><span class="small">понедельник</span><br><span class="pill yellow">Форлакс</span>
+</button><button class="day f3" data-day="23" type="button">
+<strong>23</strong><br><span class="small">вторник</span><br><span class="pill red">без Форлакса</span>
+</button><button class="day f3 train" data-day="24" type="button">
+<strong>24</strong><br><span class="small">среда</span><br><span class="pill red">без Форлакса</span><span class="pill blue">тренировка</span>
+</button><button class="day f3" data-day="25" type="button">
+<strong>25</strong><br><span class="small">четверг</span><br><span class="pill yellow">Форлакс</span>
+</button><button class="day f3" data-day="26" type="button">
+<strong>26</strong><br><span class="small">пятница</span><br><span class="pill red">без Форлакса</span>
+</button><button class="day f3 train" data-day="27" type="button">
+<strong>27</strong><br><span class="small">суббота</span><br><span class="pill red">без Форлакса</span><span class="pill blue">тренировка</span>
+</button><button class="day f3 train" data-day="28" type="button">
+<strong>28</strong><br><span class="small">воскресенье</span><br><span class="pill yellow">Форлакс</span><span class="pill blue">тренировка</span>
+</button><button class="day f3" data-day="29" type="button">
+<strong>29</strong><br><span class="small">понедельник</span><br><span class="pill red">без Форлакса</span>
+</button><button class="day f3" data-day="30" type="button">
+<strong>30</strong><br><span class="small">вторник</span><br><span class="pill red">без Форлакса</span>
+</button>
+</div></div>
+  <div class="small muted">↔️ На телефоне календарь можно прокручивать вбок.</div>
+  <div class="result" id="selectedInfo">понедельник, 1 июня 2026
+🟢 Этап 1: ежедневно
+Форлакс 5 г сегодня нужен
+🌷 Нет тренировки</div>
+</section>
+
+<section id="plan">
+  <h2>🕒 План выбранного дня</h2>
+  <div class="timeline" id="timeline">
+<div class="rowtime"><div class="time">10:30</div><div>Подъём: 300–500 мл воды, 10 минут мягкого движения.</div></div>
+<div class="rowtime"><div class="time">11:00</div><div>Завтрак + Золофт 50 мг + витамин D3. Белок + мягкий углевод.</div></div>
+<div class="rowtime"><div class="time">14:00</div><div>Форлакс 5 г: 50 мл воды + стакан воды. Не смешивать с едой.</div></div>
+<div class="rowtime"><div class="time">14:30</div><div>Обед: белок + рис/гречка/картофель/киноа + мягкие овощи.</div></div>
+<div class="rowtime"><div class="time">18:00</div><div>Перекус: киви + орехи / яйцо + рисовый хлебец / безлактозный йогурт.</div></div>
+<div class="rowtime"><div class="time">21:00</div><div>Ужин + Лактинет: рыба/курица/омлет + картофель/рис + мягкие овощи.</div></div>
+<div class="rowtime"><div class="time">23:30</div><div>Магний цитрат + B6. Не рядом с Форлаксом.</div></div>
+<div class="rowtime"><div class="time">00:30</div><div>Коллаген: только с 15 июня и при стабильном ЖКТ.</div></div>
+<div class="rowtime"><div class="time">01:00–02:00</div><div>Сон. Не делать тяжелый жирный прием пищи прямо перед сном.</div></div>
+</div>
+</section>
+
+<section class="screenHero">
+  <h2>2. ✅ Что отметить сегодня</h2>
+  <p>Самые важные ежедневные отметки собраны сразу после календаря.</p>
+</section>
+
+<section id="today">
+  <h2>🌸 Сегодня / выбранный день</h2>
+  <div class="grid">
+    <div class="card"><span class="badge">Дата</span><div class="big" id="dateBox">понедельник, 1 июня 2026</div><div class="muted">Нажмите на день в календаре, чтобы сменить дату.</div></div>
+    <div class="card green"><span class="badge green">Форлакс</span><div id="forlaxBox"><b>🟢 Этап 1: ежедневно</b><br>Форлакс 5 г сегодня нужен</div><div class="progress"><div class="bar yellow" id="forlaxProgress" style="width:3.3%"></div></div><div id="forlaxCountdown" class="small">День 1 из 30</div></div>
+    <div class="card blue"><span class="badge blue">Тренировка</span><div id="trainBox"><b>🌷 Нет тренировки</b></div></div>
+    <div class="card yellow"><span class="badge yellow">Следующая тренировка</span><div id="nextTrainBox">среда, 3 июня 2026 · Тренировка 19:30–21:00</div></div>
+  </div>
+  <h3>😊 Моё состояние сегодня</h3>
+  <div class="card">
+    <div class="moodBtns">
+      <button class="green" onclick="setMood('good')">😊 хорошо</button>
+      <button class="yellow" onclick="setMood('mid')">😐 средне</button>
+      <button class="red" onclick="setMood('bad')">😣 плохо</button>
+    </div>
+    <div id="moodStatus" class="result">Настроение ещё не отмечено.</div>
+    <div id="moodMap" class="miniChart"></div>
+  </div>
+</section>
+
+
+<section id="quickHub">
+  <h2>⚡ Быстрые действия на день</h2>
+  <div class="quickGrid">
+    <a href="#meds" class="quickBtn">💊 Таблетки</a>
+    <a href="#track" class="quickBtn">📊 Симптомы</a>
+    <a href="#menu" class="quickBtn food">🍽️ Еда</a>
+    <a href="#pcos" class="quickBtn">🌸 Цикл</a>
+    <a href="#sleep" class="quickBtn">🌙 Сон</a>
+    <a href="#badgut" class="quickBtn danger">😣 ЖКТ плохо</a>
+  </div>
+</section>
+
+
+<section id="meds">
+  <h2>💊 Центр лекарств и БАДов</h2>
+  <div class="grid">
+    <div class="card">
+      <span class="badge">Утро</span>
+      <label class="row"><input type="checkbox" data-med="zoloft">Золофт 50 мг — с завтраком</label>
+      <label class="row"><input type="checkbox" data-med="d3">Витамин D3 — с завтраком</label>
+    </div>
+    <div class="card blue">
+      <span class="badge blue">День</span>
+      <label class="row"><input type="checkbox" data-med="forlax">Форлакс — по схеме дня</label>
+      <label class="row"><input type="checkbox" data-med="kiwi">Киви / мягкая поддержка стула</label>
+    </div>
+    <div class="card yellow">
+      <span class="badge yellow">Вечер</span>
+      <label class="row"><input type="checkbox" data-med="laktinet">Лактинет — с ужином</label>
+      <label class="row"><input type="checkbox" data-med="magnesium">Магний цитрат + B6</label>
+    </div>
+    <div class="card lav">
+      <span class="badge lav">Дополнительно</span>
+      <label class="row"><input type="checkbox" data-med="collagen">Коллаген — с 15 июня при стабильном ЖКТ</label>
+      <label class="row"><input type="checkbox" data-med="probiotic">Пробиотик — только осторожно</label>
+    </div>
+  </div>
+  <div class="card green">
+    <div class="big" id="medsToday">Сегодня принято: 0/8</div>
+    <div class="progress"><div class="bar pink" id="medsBar"></div></div>
+    <div id="medStats" class="result"></div>
+    <button class="gray" onclick="resetMeds()">Сбросить таблетки дня</button>
+  </div>
+</section>
+
+<section id="track">
+  <h2>📊 Трекеры симптомов</h2>
+  <div class="grid">
+    <div class="card green">
+      <h3>Кишечник</h3>
+      <label>Стул сегодня<select id="stool"><option>нет</option><option>да</option></select></label>
+      <label>Шкала Бристоля<select id="bristol"><option>—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label>
+      <label>Натуживание 0–3<input id="strain" type="number" min="0" max="3"></label>
+      <label><input id="complete" type="checkbox"> Было чувство полного опорожнения</label>
+    </div>
+    <div class="card lav">
+      <h3>Симптомы 0–10</h3>
+      <label class="scaleLabel"><span class="scaleHead">Вздутие <b id="bloatOut" class="scaleValue">0</b></span><input id="bloat" type="range" min="0" max="10" value="0"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+      <label class="scaleLabel"><span class="scaleHead">Боль <b id="painOut" class="scaleValue">0</b></span><input id="pain" type="range" min="0" max="10" value="0"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+      <label class="scaleLabel"><span class="scaleHead">Тяжесть <b id="heavyOut" class="scaleValue">0</b></span><input id="heavy" type="range" min="0" max="10" value="0"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+      <label class="scaleLabel"><span class="scaleHead">Энергия <b id="energyOut" class="scaleValue">5</b></span><input id="energyTrack" type="range" min="0" max="10" value="5"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+    </div>
+    <div class="card blue">
+      <h3>Вода</h3>
+      <div class="progress"><div class="bar" id="waterBar"></div></div>
+      <div id="waterText">0 / 2300 мл</div>
+      <button onclick="addWater(250)">+250 мл</button><button onclick="addWater(500)">+500 мл</button><button class="gray" onclick="clearWater()">Сброс</button>
+    </div>
+    <div class="card yellow">
+      <h3>Заметки дня</h3>
+      <textarea id="notes" placeholder="Новые продукты, стресс, кофе, тренировка, боли, реакция на БАДы..."></textarea>
+    </div>
+  </div>
+  <button onclick="saveTrackers()">Сохранить трекеры</button>
+  <button class="blue" onclick="showHistory()">Показать историю</button>
+  <div class="result" id="why">Возможные причины появятся после отметок.</div>
+  <div class="canvasWrap"><canvas id="symptomChart" class="chart" width="760" height="190"></canvas></div>
+  <div class="result" id="history" style="display:none"></div>
+</section>
+
+<section id="pcos">
+  <h2>🌸 Женское здоровье: цикл / месячные / СПКЯ</h2>
+  <div class="grid">
+    <div class="card lav">
+      <span class="badge lav">Месячные</span>
+      <div class="big" id="cycleStatus">Месячные не отмечены</div>
+      <button class="red" onclick="periodStart()">🩸 Начались месячные</button>
+      <button class="gray" onclick="periodEnd()">🩸 Закончились месячные</button>
+      <button class="gray" onclick="clearLastPeriod()">Сбросить последнюю отметку</button>
+      <div id="periodStats" class="result">Нажмите «Начались месячные» в первый день и «Закончились» в последний.</div>
+    </div>
+    <div class="card lav">
+      <span class="badge lav">Календарь месячных</span>
+      <div id="periodMap" class="miniChart"></div>
+      <p class="small">🩸 — дни кровотечения. Календарь обновляется после отметки начала/конца.</p>
+    </div>
+    <div class="card lav">
+      <span class="badge lav">СПКЯ: ежедневные маркеры</span>
+      <label class="scaleLabel"><span class="scaleHead">Аппетит <b id="appetiteOut" class="scaleValue">5</b></span><input id="appetite" type="range" min="0" max="10" value="5"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+      <label class="scaleLabel"><span class="scaleHead">Тяга к сладкому <b id="sweetOut" class="scaleValue">0</b></span><input id="sweetCraving" type="range" min="0" max="10" value="0"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+    </div>
+    <div class="card lav">
+      <span class="badge lav">Кожа / настроение</span>
+      <label class="scaleLabel"><span class="scaleHead">Кожа / акне <b id="skinOut" class="scaleValue">0</b></span><input id="skin" type="range" min="0" max="10" value="0"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+      <label class="scaleLabel"><span class="scaleHead">Настроение / ПМС <b id="pmsOut" class="scaleValue">0</b></span><input id="pms" type="range" min="0" max="10" value="0"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+      <textarea id="pcosNotes" placeholder="Комментарии: кожа, аппетит, настроение, боли, выделения..."></textarea>
+    </div>
+  </div>
+  <button onclick="savePCOS()">Сохранить СПКЯ-блок</button>
+  <div id="pcosSaved" class="result">Данные ещё не сохранены.</div>
+</section>
+
+<section id="sleep">
+  <h2>🌙 Сон</h2>
+  <div class="grid">
+    <div class="card blue">
+      <label>Легла спать<input id="sleepTime" type="time" value="01:30"></label>
+      <label>Проснулась<input id="wakeTime" type="time" value="10:30"></label>
+      <label class="scaleLabel"><span class="scaleHead">Качество сна <b id="sleepOut" class="scaleValue">5</b></span><input id="sleepQuality" type="range" min="0" max="10" value="5"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+      <button onclick="saveSleep()">Сохранить сон</button>
+    </div>
+    <div class="card blue">
+      <h3>Зачем отслеживать</h3>
+      <p>Сон может влиять на моторику кишечника, тягу к сладкому, восстановление после тренировок и тревожность.</p>
+      <div id="sleepSaved" class="result">Данные ещё не сохранены.</div>
+    </div>
+  </div>
+</section>
+
+<section id="training">
+  <h2>🏋️ Тренировки и восстановление</h2>
+  <div class="grid">
+    <div class="card blue"><span class="badge blue">Среда</span><b>19:30–21:00</b><br>18:00 — рис/гречка + индейка/курица<br>21:15 — рыба/курица + картофель/рис</div>
+    <div class="card blue"><span class="badge blue">Суббота</span><b>19:30–23:00</b><br>18:00 — плотная еда<br>21:00 — банан/рисовый батончик<br>23:15 — лёгкий ужин</div>
+    <div class="card blue"><span class="badge blue">Воскресенье</span><b>17:30–19:30</b><br>16:00 — гречка/рис + индейка<br>20:00 — ужин + Лактинет</div>
+  </div>
+  <div class="card">
+    <h3>Самочувствие после тренировки</h3>
+    <label class="scaleLabel"><span class="scaleHead">Энергия после тренировки <b id="trainEnergyOut" class="scaleValue">5</b></span><input id="trainEnergy" type="range" min="0" max="10" value="5"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+    <label class="scaleLabel"><span class="scaleHead">Мышцы / усталость <b id="trainMuscleOut" class="scaleValue">0</b></span><input id="trainMuscle" type="range" min="0" max="10" value="0"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+    <label class="scaleLabel"><span class="scaleHead">Суставы <b id="trainJointsOut" class="scaleValue">0</b></span><input id="trainJoints" type="range" min="0" max="10" value="0"><span class="scaleTicks"><span>0</span><span>5</span><span>10</span></span></label>
+    <button onclick="saveTraining()">Сохранить восстановление</button>
+    <div id="trainingSaved" class="result">Данные ещё не сохранены.</div>
+  </div>
+</section>
+
+<section id="badgut">
+  <h2>😣 Кнопка «ЖКТ плохо»</h2>
+  <div class="two">
+    <div class="card red">
+      <h3>Если сегодня вздутие/боль/тяжесть</h3>
+      <button class="red" onclick="badGutMode()">Включить щадящий режим на сегодня</button>
+      <div id="badGutBox" class="result">Нажмите кнопку, если ЖКТ сегодня капризничает.</div>
+    </div>
+    <div class="card green">
+      <h3>24 часа восстановления</h3>
+      <ul>
+        <li>Завтрак: омлет + рисовый хлебец / овсянка по переносимости.</li>
+        <li>Обед: курица/индейка + рис/картофель + кабачок.</li>
+        <li>Ужин: рыба/омлет + рис/картофель.</li>
+        <li>Не вводить новые БАДы и продукты.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="screenHero">
+  <h2>3. 🍽️ Еда и покупки</h2>
+  <p>Еда поднята выше: меню, готовка и покупки теперь не надо долго искать.</p>
+</section>
+
+<section id="menu">
+  <h2>🍽️ Конструктор еды</h2>
+  <div class="two">
+    <div class="card">
+      <label>Приём пищи
+        <select id="mealType">
+          <option value="breakfast">Завтрак</option><option value="lunch">Обед</option><option value="snack">Перекус</option>
+          <option value="dinner">Ужин</option><option value="pre">Перед тренировкой</option><option value="post">После тренировки</option>
+        </select>
+      </label>
+      <button onclick="makeMeal()">Собрать идею</button>
+      <button class="yellow" onclick="makeDayMenu()">Меню на день</button>
+      <button class="blue" onclick="addMealToShop()">В покупки</button>
+      <div class="result" id="mealResult">Нажмите кнопку — появится идея.</div>
+    </div>
+    <div class="card">
+      <h3>Что есть дома?</h3>
+      <textarea id="homeFoods" placeholder="Например: яйца, рис, кабачок, курица"></textarea>
+      <button class="green" onclick="cookFromHome()">Придумать из того, что есть</button>
+      <div class="result" id="homeFoodResult">Введите продукты и нажмите кнопку.</div>
+    </div>
+  </div>
+</section>
+
+<section id="cook">
+  <h2>👩‍🍳 Конструктор готовки</h2>
+  <div class="grid">
+    <div class="card">
+      <label>Сколько сил сегодня?
+        <select id="cookEnergy">
+          <option value="low">Минимум: 10–15 минут</option>
+          <option value="mid">Нормально: 25–35 минут</option>
+          <option value="prep">Заготовки на 2–3 дня</option>
+        </select>
+      </label>
+      <button onclick="makeCooking()">Дать план готовки</button>
+      <div class="result" id="cookResult">10–15 минут:
+1) Омлет из 2 яиц.
+2) Рисовый хлебец или готовая гречка.
+3) Огурец/киви.</div>
+    </div>
+    <div class="card green">
+      <h3>Формула безопасной тарелки</h3>
+      <ul><li>Белок: яйца, рыба, курица, индейка.</li><li>Углевод: рис, гречка, картофель, киноа.</li><li>Овощи: кабачки, морковь, огурец, шпинат.</li><li>Жиры: оливковое масло, орехи — умеренно.</li></ul>
+    </div>
+  </div>
+</section>
+
+<section id="shop">
+  <h2>🛒 Покупки и остатки</h2>
+  <div class="two">
+    <div class="card">
+      <h3>Список покупок</h3>
+      <button onclick="addBase()">База на неделю</button>
+      <button class="blue" onclick="addTraining()">Для тренировок</button>
+      <button class="green" onclick="addConstipation()">Для стула</button>
+      <button class="gray" onclick="clearShop()">Очистить</button>
+      <div class="result" id="shopList">Список пуст.</div>
+    </div>
+    <div class="card yellow">
+      <h3>Остатки холодильника</h3>
+      <div class="inventoryItem"><input id="invName" placeholder="продукт"><input id="invQty" placeholder="кол-во"><button onclick="addInventory()">+</button></div>
+      <div id="inventoryList" class="result">Остатков пока нет.</div>
+    </div>
+  </div>
+</section>
+
+<section class="screenHero">
+  <h2>4. 📈 История и итоги</h2>
+  <p>То, что можно смотреть не каждый день: изменения, победы и динамика.</p>
+</section>
+
+<section id="changes">
+  <h2>🌿 Журнал изменений</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Добавить изменение</h3>
+      <input id="changeDate" type="date" value="2026-06-01">
+      <textarea id="changeText" placeholder="Например: начала коллаген / пропустила Форлакс / новый продукт"></textarea>
+      <button onclick="addChange()">Добавить</button>
+    </div>
+    <div class="card green">
+      <h3>Плановые изменения июня</h3>
+      <div id="changeLog" class="result">01.06 — старт наблюдения
+15.06 — можно добавить коллаген, если ЖКТ стабилен
+22.06 — пробиотик только если нет вздутия
+30.06 — переход к полной отмене Форлакса</div>
+    </div>
+  </div>
+</section>
+
+<section id="wins">
+  <h2>🏆 Победы месяца</h2>
+  <div class="grid">
+    <div class="card green"><span class="badge green">Лекарства</span><div id="winMeds">Пока нет данных.</div></div>
+    <div class="card blue"><span class="badge blue">Вода</span><div id="winWater">Пока нет данных.</div></div>
+    <div class="card yellow"><span class="badge yellow">Тренировки</span><div id="winTraining">Пока нет данных.</div></div>
+    <div class="card lav"><span class="badge lav">ЖКТ</span><div id="winGut">Пока нет данных.</div></div>
+  </div>
+  <button onclick="calcWins()">Обновить победы</button>
+</section>
+
+<section class="screenHero">
+  <h2>5. 📌 Справочник</h2>
+  <p>Правила безопасности, лекарства и ограничения.</p>
+</section>
+
+<section id="rules">
+  <h2>⚠️ Правила безопасности</h2>
+  <div class="grid">
+    <div class="card"><span class="badge red">Золофт</span><ul><li>Зверобой нельзя.</li><li>Алкоголь избегать.</li><li>Грейпфрут лучше исключить.</li><li>Кофе — только после еды.</li></ul></div>
+    <div class="card"><span class="badge red">Лактинет</span><ul><li>Зверобой нельзя.</li><li>Гормональные сборы и БАДы для похудения — без врача.</li></ul></div>
+    <div class="card"><span class="badge red">Форлакс</span><ul><li>Не смешивать с едой.</li><li>5 г в 50 мл воды + 200–250 мл воды.</li><li>Интервал 2 часа с магнием, пробиотиком, клетчаткой.</li></ul></div>
+  </div>
+  <p class="note"><b>Июнь = тестовый месяц.</b> Главная задача — не идеальность, а регулярные отметки. В июле можно будет упростить, убрать лишнее и донастроить под реальные данные.</p>
+</section>
+</main>
+
+<script>
+(function(){
+'use strict';
+var selectedDay=1, water=0, currentMeal=[], shop=[], inventory=[], changes=[];
+var days=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+var medList=['zoloft','d3','forlax','kiwi','laktinet','magnesium','collagen','probiotic'];
+function id(x){return document.getElementById(x)}
+function pad(n){return String(n).padStart(2,'0')}
+function key(day){return '2026-06-'+pad(day||selectedDay)}
+function weekday(day){return new Date(2026,5,day).getDay()}
+function fmt(day){return days[weekday(day)]+', '+day+' июня 2026'}
+function training(day){var w=weekday(day);if(w===3)return{yes:true,title:'🏋️ Тренировка 19:30–21:00',pre:'18:00 — еда перед тренировкой',post:'21:15 — ужин после тренировки'};if(w===6)return{yes:true,title:'🏋️ Тренировка 19:30–23:00',pre:'18:00 — плотная еда + перекус в перерыве',post:'23:15 — поздний лёгкий ужин'};if(w===0)return{yes:true,title:'🏋️ Тренировка 17:30–19:30',pre:'16:00 — еда перед тренировкой',post:'20:00 — ужин после тренировки'};return{yes:false,title:'🌷 Нет тренировки',pre:'',post:''}}
+function forlax(day){if(day<=14)return{stage:'🟢 Этап 1: ежедневно',dose:'Форлакс 5 г сегодня нужен',cls:'f1',pill:'green',label:'Форлакс'};if(day<=21){var n=(day-15)%2===0;return{stage:'🟡 Этап 2: через день',dose:n?'Форлакс 5 г сегодня нужен':'Сегодня без Форлакса',cls:'f2',pill:n?'yellow':'red',label:n?'Форлакс':'без Форлакса'}}var n2=(day-22)%3===0;return{stage:'🟠 Этап 3: через 2 дня',dose:n2?'Форлакс 5 г сегодня нужен':'Сегодня без Форлакса',cls:'f3',pill:n2?'yellow':'red',label:n2?'Форлакс':'без Форлакса'}}
+function nextTrain(day){for(var d=day+1;d<=30;d++){var t=training(d);if(t.yes)return fmt(d)+' · '+t.title.replace('🏋️ ','')}return'В июне больше нет тренировок по расписанию'}
+
+function buildCalendar(){var html='<div class="dow">Пн</div><div class="dow">Вт</div><div class="dow">Ср</div><div class="dow">Чт</div><div class="dow">Пт</div><div class="dow">Сб</div><div class="dow">Вс</div>';for(var day=1;day<=30;day++){var f=forlax(day),t=training(day);html+='<button class="day '+f.cls+(t.yes?' train':'')+(day===selectedDay?' selected':'')+'" data-day="'+day+'" type="button"><strong>'+day+'</strong><br><span class="small">'+days[weekday(day)]+'</span><br><span class="pill '+f.pill+'">'+f.label+'</span>'+(t.yes?'<span class="pill blue">тренировка</span>':'')+'</button>'}id('cal').innerHTML=html;document.querySelectorAll('.day').forEach(function(c){c.onclick=function(){selectedDay=Number(c.dataset.day);renderAll();location.hash='#today'}})}
+function renderTop(){var f=forlax(selectedDay),t=training(selectedDay);id('dateBox').textContent=fmt(selectedDay);id('forlaxBox').innerHTML='<b>'+f.stage+'</b><br>'+f.dose;id('trainBox').innerHTML=t.yes?'<b>'+t.title+'</b><br>'+t.pre:'<b>'+t.title+'</b>';id('nextTrainBox').textContent=nextTrain(selectedDay);id('selectedInfo').textContent=fmt(selectedDay)+'\n'+f.stage+'\n'+f.dose+'\n'+t.title+(t.yes?'\n'+t.pre+'\n'+t.post:'');id('forlaxProgress').style.width=(selectedDay/30*100)+'%';id('forlaxCountdown').textContent='День '+selectedDay+' из 30 · до конца июня '+(30-selectedDay)+' дн.'}
+function renderTimeline(){var f=forlax(selectedDay),t=training(selectedDay),w=weekday(selectedDay),r=[];r.push(['10:30','Подъём: 300–500 мл воды, 10 минут мягкого движения.']);r.push(['11:00','Завтрак + Золофт 50 мг + витамин D3. Белок + мягкий углевод.']);r.push(['14:00',f.dose.indexOf('нужен')>-1?'Форлакс 5 г: 50 мл воды + стакан воды. Не смешивать с едой.':'День без Форлакса: вода + наблюдение за стулом.']);r.push(['14:30','Обед: белок + рис/гречка/картофель/киноа + мягкие овощи.']);if(t.yes&&w===0){r.push(['16:00',t.pre+': гречка/рис + индейка/курица.']);r.push(['20:00',t.post+' + Лактинет.'])}else if(t.yes&&w===3){r.push(['18:00',t.pre+': рис/гречка + индейка/курица, минимум сырой клетчатки.']);r.push(['21:15',t.post+' + Лактинет: рыба/курица + картофель/рис.'])}else if(t.yes&&w===6){r.push(['18:00',t.pre+': рис/картофель + индейка/курица.']);r.push(['21:00','Если есть перерыв: банан не переспелый или рисовый батончик без мёда.']);r.push(['23:15',t.post+' + Лактинет: омлет/рыба, без тяжелой клетчатки.'])}else{r.push(['18:00','Перекус: киви + орехи / яйцо + рисовый хлебец / безлактозный йогурт.']);r.push(['21:00','Ужин + Лактинет: рыба/курица/омлет + картофель/рис + мягкие овощи.'])}r.push(['23:30','Магний цитрат + B6. Не рядом с Форлаксом.']);r.push(['00:30','Коллаген: только с 15 июня и при стабильном ЖКТ.']);r.push(['01:00–02:00','Сон. Не делать тяжелый жирный прием пищи прямо перед сном.']);id('timeline').innerHTML=r.map(function(x){return'<div class="rowtime"><div class="time">'+x[0]+'</div><div>'+x[1]+'</div></div>'}).join('')}
+
+function loadMeds(){document.querySelectorAll('[data-med]').forEach(function(b){var k=key()+':med:'+b.dataset.med;b.checked=localStorage.getItem(k)==='1';b.onchange=function(){localStorage.setItem(k,b.checked?'1':'0');renderMedStats();calcWins()}});renderMedStats()}
+function resetMeds(){document.querySelectorAll('[data-med]').forEach(function(b){localStorage.removeItem(key()+':med:'+b.dataset.med);b.checked=false});renderMedStats()} window.resetMeds=resetMeds
+function renderMedStats(){var checked=0;document.querySelectorAll('[data-med]').forEach(function(b){if(b.checked)checked++});id('medsToday').textContent='Сегодня принято: '+checked+'/'+medList.length;id('medsBar').style.width=(checked/medList.length*100)+'%';var lines=[];medList.forEach(function(m){var c=0;for(var d=1;d<=30;d++){if(localStorage.getItem(key(d)+':med:'+m)==='1')c++}lines.push(m+': '+c+'/30')});id('medStats').textContent='Статистика за июнь:\n'+lines.join('\n')}
+
+function renderWater(){water=Number(localStorage.getItem(key()+':water')||0);id('waterText').textContent=water+' / 2300 мл';id('waterBar').style.width=Math.min(100,water/2300*100)+'%'} window.addWater=function(x){water+=x;localStorage.setItem(key()+':water',water);renderWater();updateWhy();drawChart();calcWins()};window.clearWater=function(){water=0;localStorage.setItem(key()+':water',0);renderWater();updateWhy();drawChart();calcWins()}
+function syncSliders(){
+  var map={
+    bloat:'bloatOut', pain:'painOut', heavy:'heavyOut', energyTrack:'energyOut',
+    trainEnergy:'trainEnergyOut', trainMuscle:'trainMuscleOut', trainJoints:'trainJointsOut',
+    appetite:'appetiteOut', sweetCraving:'sweetOut', skin:'skinOut', pms:'pmsOut',
+    sleepQuality:'sleepOut'
+  };
+  Object.keys(map).forEach(function(k){
+    var input=id(k), output=id(map[k]);
+    if(input && output) output.textContent=input.value;
+  });
+}
+
+document.addEventListener('input', function(e){
+  if(e.target && e.target.type === 'range') syncSliders();
+});
+document.addEventListener('change', function(e){
+  if(e.target && e.target.type === 'range') syncSliders();
+});
+
+function loadTrackers(){['stool','bristol','strain','notes'].forEach(function(x){if(id(x))id(x).value=x==='stool'?'нет':(x==='bristol'?'—':'')});id('complete').checked=false;['bloat','pain','heavy'].forEach(function(x){id(x).value=0});id('energyTrack').value=5;var old=localStorage.getItem(key()+':track');if(old){try{var d=JSON.parse(old);id('stool').value=d.stool||'нет';id('bristol').value=d.bristol||'—';id('strain').value=d.strain||'';id('complete').checked=!!d.complete;id('bloat').value=d.bloat||0;id('pain').value=d.pain||0;id('heavy').value=d.heavy||0;id('energyTrack').value=d.energy||5;id('notes').value=d.notes||''}catch(e){}}syncSliders()}
+function updateWhy(){syncSliders();var p=[];if(Number(id('bloat').value)>=6)p.push('вздутие высокое: проверить новый продукт, FODMAP, объем сырой клетчатки, пробиотик');if(Number(id('pain').value)>=6)p.push('боль высокая: упростить рацион на 24 часа и не вводить новые БАДы');if(Number(id('heavy').value)>=6)p.push('тяжесть высокая: проверить жирность еды, поздний ужин, кофе, объём порции');if(water<1500)p.push('воды пока мало — это может ухудшать запор');if(id('stool').value==='нет')p.push('нет стула: проверить воду, киви, магний, движение и этап Форлакса');id('why').textContent=p.length?'Возможные причины:\n- '+p.join('\n- '):'Симптомы спокойные или данных пока мало 🌿'}
+['bloat','pain','heavy','energyTrack','stool','trainEnergy','trainMuscle','trainJoints','appetite','sweetCraving','skin','pms','sleepQuality'].forEach(function(x){document.addEventListener('input',function(e){if(e.target&&e.target.id===x){syncSliders();updateWhy()}});document.addEventListener('change',function(e){if(e.target&&e.target.id===x){syncSliders();updateWhy()}})})
+window.saveTrackers=function(){var d={stool:id('stool').value,bristol:id('bristol').value,strain:id('strain').value,complete:id('complete').checked,bloat:id('bloat').value,pain:id('pain').value,heavy:id('heavy').value,energy:id('energyTrack').value,notes:id('notes').value,water:water};localStorage.setItem(key()+':track',JSON.stringify(d));id('why').textContent='Сохранено для '+fmt(selectedDay)+' 💖\n\n'+id('why').textContent;drawChart();calcWins()}
+window.showHistory=function(){var out=[];for(var d=1;d<=30;d++){var v=localStorage.getItem(key(d)+':track');if(v){try{var x=JSON.parse(v);out.push(d+'.06 · стул: '+x.stool+', Бристоль: '+x.bristol+', вздутие: '+x.bloat+', боль: '+x.pain+', тяжесть: '+x.heavy+', вода: '+(x.water||0)+' мл')}catch(e){}}}id('history').style.display='block';id('history').textContent=out.length?out.join('\n'):'Истории пока нет. Сохраняйте трекеры каждый день.'}
+function drawChart(){var c=id('symptomChart'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle='#f1dce8';ctx.lineWidth=1;for(var y=20;y<170;y+=30){ctx.beginPath();ctx.moveTo(30,y);ctx.lineTo(740,y);ctx.stroke()}function line(field,color){ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();var started=false;for(var d=1;d<=30;d++){var v=localStorage.getItem(key(d)+':track');if(!v)continue;try{var x=JSON.parse(v),val=Number(x[field]||0),px=30+(d-1)*(710/29),py=170-val*15;if(!started){ctx.moveTo(px,py);started=true}else ctx.lineTo(px,py)}catch(e){}}ctx.stroke()}line('bloat','#ef7fb4');line('pain','#d65f73');line('heavy','#ffd166');ctx.fillStyle='#756777';ctx.font='12px Arial';ctx.fillText('вздутие розовый · боль красный · тяжесть жёлтый',35,16)}
+function badGutMode(){id('badGutBox').textContent='Щадящий режим на '+fmt(selectedDay)+':\n\n✅ оставить:\n- рис / картофель\n- яйца / курица / индейка / рыба\n- кабачок / морковь тушёная\n- вода маленькими порциями\n\n⛔ убрать на 24 часа:\n- новые продукты\n- пробиотик\n- масло натощак\n- избыток клетчатки\n- жирное и острое\n- лук, чеснок, яблоки, мёд\n\n💡 цель: не лечить всё сразу, а успокоить ЖКТ и вернуться к стабильной схеме.';localStorage.setItem(key()+':badGut','1')} window.badGutMode=badGutMode
+
+function setMood(m){localStorage.setItem(key()+':mood',m);renderMood()} window.setMood=setMood
+function renderMood(){var m=localStorage.getItem(key()+':mood');id('moodStatus').textContent=m==='good'?'Сегодня: 😊 хорошо':m==='mid'?'Сегодня: 😐 средне':m==='bad'?'Сегодня: 😣 плохо':'Настроение ещё не отмечено.';var html='';for(var d=1;d<=30;d++){var x=localStorage.getItem(key(d)+':mood')||'';html+='<div class="dot '+x+'" title="'+d+'.06">'+(x==='good'?'😊':x==='mid'?'😐':x==='bad'?'😣':d)+'</div>'}id('moodMap').innerHTML=html}
+
+function saveTraining(){var d={energy:id('trainEnergy').value,muscle:id('trainMuscle').value,joints:id('trainJoints').value};localStorage.setItem(key()+':training',JSON.stringify(d));id('trainingSaved').textContent='Сохранено: энергия '+d.energy+', мышцы '+d.muscle+', суставы '+d.joints;calcWins()} window.saveTraining=saveTraining
+function loadTraining(){['trainEnergy','trainMuscle','trainJoints'].forEach(function(x){id(x).value=x==='trainEnergy'?5:0});var v=localStorage.getItem(key()+':training');if(v){try{var d=JSON.parse(v);id('trainEnergy').value=d.energy||5;id('trainMuscle').value=d.muscle||0;id('trainJoints').value=d.joints||0;id('trainingSaved').textContent='Сохранено: энергия '+id('trainEnergy').value+', мышцы '+id('trainMuscle').value+', суставы '+id('trainJoints').value}catch(e){}}syncSliders()}
+function dayToDate(day){return '2026-06-'+pad(day)}
+function getPeriods(){try{return JSON.parse(localStorage.getItem('periodsV9')||'[]')}catch(e){return[]}}
+function savePeriods(p){localStorage.setItem('periodsV9',JSON.stringify(p))}
+function periodStart(){
+  var p=getPeriods();
+  var today=dayToDate(selectedDay);
+  var existing=p.find(function(x){return x.start===today});
+  if(!existing)p.push({start:today,end:null});
+  savePeriods(p);
+  renderPeriod();
+}
+window.periodStart=periodStart
+function periodEnd(){
+  var p=getPeriods();
+  var today=dayToDate(selectedDay);
+  if(!p.length){p.push({start:today,end:today})}
+  else{
+    p.sort(function(a,b){return a.start.localeCompare(b.start)});
+    var last=p[p.length-1];
+    if(!last.end)last.end=today;
+    else p.push({start:last.start,end:today});
+  }
+  savePeriods(p);
+  renderPeriod();
+}
+window.periodEnd=periodEnd
+function clearLastPeriod(){
+  var p=getPeriods();
+  if(p.length)p.pop();
+  savePeriods(p);
+  renderPeriod();
+}
+window.clearLastPeriod=clearLastPeriod
+function dateToDay(s){return Number((s||'').slice(-2))}
+function isPeriodDay(day){
+  var p=getPeriods();
+  for(var i=0;i<p.length;i++){
+    var a=dateToDay(p[i].start), b=p[i].end?dateToDay(p[i].end):selectedDay;
+    if(day>=a && day<=b)return true;
+  }
+  return false;
+}
+function renderPeriod(){
+  var p=getPeriods().sort(function(a,b){return a.start.localeCompare(b.start)});
+  var html='';
+  for(var d=1;d<=30;d++){
+    var on=isPeriodDay(d);
+    html+='<div class="dot '+(on?'bad':'')+'" title="'+d+'.06">'+(on?'🩸':d)+'</div>';
+  }
+  if(id('periodMap'))id('periodMap').innerHTML=html;
+  if(!p.length){
+    id('cycleStatus').textContent='Месячные не отмечены';
+    id('periodStats').textContent='Нажмите «Начались месячные» в первый день и «Закончились» в последний.';
+    return;
+  }
+  var last=p[p.length-1], start=dateToDay(last.start), end=last.end?dateToDay(last.end):null;
+  var cycleDay=selectedDay-start+1;
+  if(cycleDay<1)cycleDay='—';
+  var bleedDays=end?Math.max(1,end-start+1):Math.max(1,selectedDay-start+1);
+  var status=!end && selectedDay>=start?'идут месячные':'месячные отмечены';
+  id('cycleStatus').textContent='Сегодня: '+(cycleDay==='—'?'день цикла неизвестен':cycleDay+' день цикла');
+  id('periodStats').textContent='Последнее начало: '+start+'.06\n'+
+    'Конец: '+(end?end+'.06':'ещё не отмечен')+'\n'+
+    'Длительность кровотечения: '+bleedDays+' дн.\n'+
+    'Статус: '+status;
+}
+function savePCOS(){var d={appetite:id('appetite').value,sweet:id('sweetCraving').value,skin:id('skin').value,pms:id('pms').value,notes:id('pcosNotes').value};localStorage.setItem(key()+':pcos',JSON.stringify(d));id('pcosSaved').textContent='Сохранено: аппетит '+d.appetite+', сладкое '+d.sweet+', кожа '+d.skin+', ПМС '+d.pms} window.savePCOS=savePCOS
+function loadPCOS(){if(id('pcosNotes'))id('pcosNotes').value='';['appetite','sweetCraving','skin','pms'].forEach(function(x){id(x).value=x==='appetite'?5:0});var v=localStorage.getItem(key()+':pcos');if(v){try{var d=JSON.parse(v);id('appetite').value=d.appetite||5;id('sweetCraving').value=d.sweet||0;id('skin').value=d.skin||0;id('pms').value=d.pms||0;id('pcosNotes').value=d.notes||''}catch(e){}}syncSliders();renderPeriod()}
+function saveSleep(){var d={sleep:id('sleepTime').value,wake:id('wakeTime').value,quality:id('sleepQuality').value};localStorage.setItem(key()+':sleep',JSON.stringify(d));id('sleepSaved').textContent='Сохранено: сон '+d.sleep+' → '+d.wake+', качество '+d.quality+'/10'} window.saveSleep=saveSleep
+function loadSleep(){id('sleepTime').value='01:30';id('wakeTime').value='10:30';id('sleepQuality').value=5;var v=localStorage.getItem(key()+':sleep');if(v){try{var d=JSON.parse(v);id('sleepTime').value=d.sleep||'01:30';id('wakeTime').value=d.wake||'10:30';id('sleepQuality').value=d.quality||5;id('sleepSaved').textContent='Сохранено: сон '+id('sleepTime').value+' → '+id('wakeTime').value+', качество '+id('sleepQuality').value+'/10'}catch(e){}}syncSliders()}
+
+var meals={breakfast:[['омлет из 2 яиц','гречка','огурец','Золофт + D3 с едой'],['овсянка на безлактозном молоке','семена чиа + голубика','—','мягкий завтрак'],['яйца варёные','рисовые хлебцы','киви','кофе только после еды']],lunch:[['индейка','рис','тушёный кабачок','1 ч.л. оливкового масла'],['курица','киноа','морковь тушёная','без острого'],['треска','картофель','огурец','лёгкий обед']],dinner:[['хек/лосось','картофель','кабачки','Лактинет с ужином'],['омлет','рис','огурец/шпинат','лёгкий вариант'],['курица','гречка','морковь','без жарки']],snack:[['киви 2 шт','грецкие орехи','—','для стула'],['безлактозный йогурт','голубика','—','если переносится'],['яйцо','рисовый хлебец','огурец','стабильный перекус']],pre:[['индейка','рис','немного кабачка','за 1,5 часа до тренировки'],['курица','гречка','огурец','без большого объёма клетчатки'],['яйцо + индейка','картофель','—','если мало времени']],post:[['рыба','картофель','огурец','после тренировки'],['курица','рис','кабачок','лёгко для ЖКТ'],['омлет','хлебец/рис','—','для поздней субботы']]}
+function pick(type){var a=meals[type];return a[Math.floor(Math.random()*a.length)]}function mealText(m){return'Белок: '+m[0]+'\nУглевод: '+m[1]+'\nОвощ/фрукт: '+m[2]+'\nКомментарий: '+m[3]} window.makeMeal=function(){currentMeal=pick(id('mealType').value);id('mealResult').textContent=mealText(currentMeal)};window.makeDayMenu=function(){var tr=training(selectedDay).yes,parts=[['Завтрак',pick('breakfast')],['Обед',pick('lunch')],['Перекус',pick(tr?'pre':'snack')],['Ужин',pick(tr?'post':'dinner')]];currentMeal=[];parts.forEach(function(p){currentMeal=currentMeal.concat(p[1])});id('mealResult').textContent=fmt(selectedDay)+'\n\n'+parts.map(function(p){return'— '+p[0]+' —\n'+mealText(p[1])}).join('\n\n')}
+function cookFromHome(){var s=id('homeFoods').value.toLowerCase();var result='';if(!s.trim()){result='Введите продукты, которые есть дома.'}else if(s.indexOf('яйц')>-1&&s.indexOf('рис')>-1){result='Идея: омлет + рис + огурец/кабачок. Подходит как быстрый ужин.'}else if(s.indexOf('кур')>-1&&s.indexOf('карто')>-1){result='Идея: курица + картофель + тушёный кабачок/морковь.'}else if(s.indexOf('рыб')>-1||s.indexOf('треск')>-1||s.indexOf('хек')>-1){result='Идея: рыба + рис/картофель + огурец или кабачок.'}else{result='Безопасная формула: выбери 1 белок + 1 мягкий углевод + 1 мягкий овощ. Например: яйца/курица + рис/картофель + кабачок/огурец.'}id('homeFoodResult').textContent=result} window.cookFromHome=cookFromHome
+function makeCooking(){var plans={low:'10–15 минут:\n1) Омлет из 2 яиц.\n2) Рисовый хлебец или готовая гречка.\n3) Огурец/киви.',mid:'25–35 минут:\n1) Поставить рис/гречку.\n2) Запечь/потушить индейку или рыбу.\n3) Потушить кабачки с морковью.\nПолучается еда + остатки на завтра.',prep:'Заготовки на 2–3 дня:\n1) Рис/гречка 3 порции.\n2) Индейка/курица 3 порции.\n3) Кабачки/морковь 2–3 порции.\n4) Яйца варёные.\n5) Перекусы: киви, орехи, хлебцы.'};id('cookResult').textContent=plans[id('cookEnergy').value]} window.makeCooking=makeCooking
+
+function loadShop(){try{shop=JSON.parse(localStorage.getItem('shopV8')||'[]')}catch(e){shop=[]}}function saveShop(){localStorage.setItem('shopV8',JSON.stringify(shop))}function addItem(x){if(!x||x==='—')return;if(x.indexOf('Золофт')>-1||x.indexOf('D3')>-1||x.indexOf('после')>-1||x.indexOf('если')>-1)return;if(shop.indexOf(x)===-1)shop.push(x)}function renderShop(){id('shopList').innerHTML=shop.length?shop.map(function(x){return'<label class="row"><input type="checkbox"> '+x+'</label>'}).join(''):'Список пуст.';saveShop()} window.addMealToShop=function(){currentMeal.forEach(addItem);renderShop()};window.addBase=function(){['яйца','индейка','курица','хек/треска','рис','гречка','картофель','киноа','кабачки','огурцы','морковь','киви','голубика','безлактозный йогурт','грецкие орехи','семена чиа','оливковое масло'].forEach(addItem);renderShop()};window.addTraining=function(){['бананы не переспелые','рисовые хлебцы','рисовые батончики без мёда','индейка','картофель','вода'].forEach(addItem);renderShop()};window.addConstipation=function(){['киви','семена чиа','магний цитрат + B6','вода','гречка','овсянка по переносимости'].forEach(addItem);renderShop()};window.clearShop=function(){shop=[];renderShop()}
+function loadInventory(){try{inventory=JSON.parse(localStorage.getItem('inventoryV8')||'[]')}catch(e){inventory=[]}renderInventory()}function saveInventory(){localStorage.setItem('inventoryV8',JSON.stringify(inventory))}function renderInventory(){id('inventoryList').innerHTML=inventory.length?inventory.map(function(x,i){return'<div class="inventoryItem"><b>'+x.name+'</b><span>'+x.qty+'</span><button class="gray" onclick="removeInventory('+i+')">×</button></div>'}).join(''):'Остатков пока нет.';saveInventory()} window.addInventory=function(){var n=id('invName').value.trim(),q=id('invQty').value.trim();if(!n)return;inventory.push({name:n,qty:q||'1'});id('invName').value='';id('invQty').value='';renderInventory()};window.removeInventory=function(i){inventory.splice(i,1);renderInventory()}
+
+function loadChanges(){try{changes=JSON.parse(localStorage.getItem('changesV8')||'[]')}catch(e){changes=[]}renderChanges()}function renderChanges(){var base=['01.06 — старт наблюдения','15.06 — можно добавить коллаген, если ЖКТ стабилен','22.06 — пробиотик только если нет вздутия','30.06 — переход к полной отмене Форлакса'];var extra=changes.map(function(x){return x.date.replace('2026-06-','')+'.06 — '+x.text});id('changeLog').textContent=base.concat(extra).join('\n');localStorage.setItem('changesV8',JSON.stringify(changes))} window.addChange=function(){var date=id('changeDate').value||key(),text=id('changeText').value.trim();if(!text)return;changes.push({date:date,text:text});id('changeText').value='';renderChanges()}
+
+function calcWins(){var z=0,l=0,w2=0,train=0,calm=0;for(var d=1;d<=30;d++){if(localStorage.getItem(key(d)+':med:zoloft')==='1')z++;if(localStorage.getItem(key(d)+':med:laktinet')==='1')l++;if(Number(localStorage.getItem(key(d)+':water')||0)>=2000)w2++;if(localStorage.getItem(key(d)+':training'))train++;var v=localStorage.getItem(key(d)+':track');if(v){try{var x=JSON.parse(v);if(Number(x.bloat||0)<6&&Number(x.pain||0)<6)calm++}catch(e){}}}id('winMeds').textContent='Золофт: '+z+'/30 · Лактинет: '+l+'/30';id('winWater').textContent='Дней с водой ≥2 л: '+w2;id('winTraining').textContent='Отмечено восстановлений после тренировок: '+train;id('winGut').textContent='Дней без сильной боли/вздутия по сохранённым трекерам: '+calm} window.calcWins=calcWins
+
+function renderAll(){buildCalendar();renderTop();renderTimeline();loadMeds();renderWater();loadTrackers();loadTraining();loadPCOS();loadSleep();renderMood();updateWhy();drawChart();calcWins()}
+try {
+  loadShop(); loadInventory(); loadChanges(); renderAll(); renderShop();
+} catch (e) {
+  console.log('Safe fallback: main render error', e);
+  try { loadShop(); loadInventory(); loadChanges(); renderShop(); } catch (_) {}
+}
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('./service-worker.js').catch(function(e){console.log(e)}); });
+}
+</script>
+</body>
+</html>
