@@ -1,7 +1,7 @@
 {
-  "name": "Июнь Health App V12",
+  "name": "Июнь Health App V13",
   "short_name": "Июнь Health",
-  "description": "PWA с календарём сверху, быстрыми отметками и едой выше.",
+  "description": "PWA с автосохранением и backup.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

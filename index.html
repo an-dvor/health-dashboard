@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>V12 · Июнь Health App</title>
+<title>V13 · Июнь Health App</title>
 <meta name="theme-color" content="#ef7fb4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -117,19 +117,23 @@ input[type=range]::-moz-range-thumb{
 #menu{border:2px solid #ffd76a}
 #meds{border:2px solid #ffe1ef}
 
+
+#backup input[type=file]{background:#fff;border:1px dashed var(--blue);padding:12px}
+
 @media(max-width:760px){h1{font-size:25px}main{padding:10px}section{padding:14px;border-radius:20px}.two{grid-template-columns:1fr}.calendar{gap:5px;min-width:680px}.day{min-height:76px;border-radius:14px;padding:6px}.day strong{font-size:15px}.pill{font-size:10px;padding:2px 5px}.rowtime{grid-template-columns:74px 1fr}.miniChart{grid-template-columns:repeat(15,1fr)}.inventoryItem{grid-template-columns:1fr 70px}}
 @media print{nav,button{display:none}body{background:#fff}section{box-shadow:none;break-inside:avoid}}
 </style>
 </head>
 <body>
 <header><div class="wrap">
-  <h1>🥰 V12 · Июнь Health App</h1>
-  <p>Версия V12: сначала календарь и ежедневные отметки, потом еда, затем аналитика и справка. Сделано для быстрого использования с телефона.</p>
+  <h1>🥰 V13 · Июнь Health App</h1>
+  <p>Версия V13: добавлено автосохранение всех отметок, восстановление выбранного дня и резервная копия данных.</p>
 </div></header>
 
 <nav class="appTabs">
   <a href="#calendar">📅 Календарь</a>
   <a href="#plan">🕒 План</a>
+  <a href="#backup">💾 Backup</a>
   <a href="#meds">💊 Таблетки</a>
   <a href="#track">📊 Симптомы</a>
   <a href="#menu">🍽️ Еда</a>
@@ -564,7 +568,7 @@ function training(day){var w=weekday(day);if(w===3)return{yes:true,title:'🏋�
 function forlax(day){if(day<=14)return{stage:'🟢 Этап 1: ежедневно',dose:'Форлакс 5 г сегодня нужен',cls:'f1',pill:'green',label:'Форлакс'};if(day<=21){var n=(day-15)%2===0;return{stage:'🟡 Этап 2: через день',dose:n?'Форлакс 5 г сегодня нужен':'Сегодня без Форлакса',cls:'f2',pill:n?'yellow':'red',label:n?'Форлакс':'без Форлакса'}}var n2=(day-22)%3===0;return{stage:'🟠 Этап 3: через 2 дня',dose:n2?'Форлакс 5 г сегодня нужен':'Сегодня без Форлакса',cls:'f3',pill:n2?'yellow':'red',label:n2?'Форлакс':'без Форлакса'}}
 function nextTrain(day){for(var d=day+1;d<=30;d++){var t=training(d);if(t.yes)return fmt(d)+' · '+t.title.replace('🏋️ ','')}return'В июне больше нет тренировок по расписанию'}
 
-function buildCalendar(){var html='<div class="dow">Пн</div><div class="dow">Вт</div><div class="dow">Ср</div><div class="dow">Чт</div><div class="dow">Пт</div><div class="dow">Сб</div><div class="dow">Вс</div>';for(var day=1;day<=30;day++){var f=forlax(day),t=training(day);html+='<button class="day '+f.cls+(t.yes?' train':'')+(day===selectedDay?' selected':'')+'" data-day="'+day+'" type="button"><strong>'+day+'</strong><br><span class="small">'+days[weekday(day)]+'</span><br><span class="pill '+f.pill+'">'+f.label+'</span>'+(t.yes?'<span class="pill blue">тренировка</span>':'')+'</button>'}id('cal').innerHTML=html;document.querySelectorAll('.day').forEach(function(c){c.onclick=function(){selectedDay=Number(c.dataset.day);renderAll();location.hash='#today'}})}
+function buildCalendar(){var html='<div class="dow">Пн</div><div class="dow">Вт</div><div class="dow">Ср</div><div class="dow">Чт</div><div class="dow">Пт</div><div class="dow">Сб</div><div class="dow">Вс</div>';for(var day=1;day<=30;day++){var f=forlax(day),t=training(day);html+='<button class="day '+f.cls+(t.yes?' train':'')+(day===selectedDay?' selected':'')+'" data-day="'+day+'" type="button"><strong>'+day+'</strong><br><span class="small">'+days[weekday(day)]+'</span><br><span class="pill '+f.pill+'">'+f.label+'</span>'+(t.yes?'<span class="pill blue">тренировка</span>':'')+'</button>'}id('cal').innerHTML=html;document.querySelectorAll('.day').forEach(function(c){c.onclick=function(){selectedDay=Number(c.dataset.day);localStorage.setItem('lastSelectedDayV13',String(selectedDay));renderAll();applyAutosave();syncSliders();location.hash='#today'}})}
 function renderTop(){var f=forlax(selectedDay),t=training(selectedDay);id('dateBox').textContent=fmt(selectedDay);id('forlaxBox').innerHTML='<b>'+f.stage+'</b><br>'+f.dose;id('trainBox').innerHTML=t.yes?'<b>'+t.title+'</b><br>'+t.pre:'<b>'+t.title+'</b>';id('nextTrainBox').textContent=nextTrain(selectedDay);id('selectedInfo').textContent=fmt(selectedDay)+'\n'+f.stage+'\n'+f.dose+'\n'+t.title+(t.yes?'\n'+t.pre+'\n'+t.post:'');id('forlaxProgress').style.width=(selectedDay/30*100)+'%';id('forlaxCountdown').textContent='День '+selectedDay+' из 30 · до конца июня '+(30-selectedDay)+' дн.'}
 function renderTimeline(){var f=forlax(selectedDay),t=training(selectedDay),w=weekday(selectedDay),r=[];r.push(['10:30','Подъём: 300–500 мл воды, 10 минут мягкого движения.']);r.push(['11:00','Завтрак + Золофт 50 мг + витамин D3. Белок + мягкий углевод.']);r.push(['14:00',f.dose.indexOf('нужен')>-1?'Форлакс 5 г: 50 мл воды + стакан воды. Не смешивать с едой.':'День без Форлакса: вода + наблюдение за стулом.']);r.push(['14:30','Обед: белок + рис/гречка/картофель/киноа + мягкие овощи.']);if(t.yes&&w===0){r.push(['16:00',t.pre+': гречка/рис + индейка/курица.']);r.push(['20:00',t.post+' + Лактинет.'])}else if(t.yes&&w===3){r.push(['18:00',t.pre+': рис/гречка + индейка/курица, минимум сырой клетчатки.']);r.push(['21:15',t.post+' + Лактинет: рыба/курица + картофель/рис.'])}else if(t.yes&&w===6){r.push(['18:00',t.pre+': рис/картофель + индейка/курица.']);r.push(['21:00','Если есть перерыв: банан не переспелый или рисовый батончик без мёда.']);r.push(['23:15',t.post+' + Лактинет: омлет/рыба, без тяжелой клетчатки.'])}else{r.push(['18:00','Перекус: киви + орехи / яйцо + рисовый хлебец / безлактозный йогурт.']);r.push(['21:00','Ужин + Лактинет: рыба/курица/омлет + картофель/рис + мягкие овощи.'])}r.push(['23:30','Магний цитрат + B6. Не рядом с Форлаксом.']);r.push(['00:30','Коллаген: только с 15 июня и при стабильном ЖКТ.']);r.push(['01:00–02:00','Сон. Не делать тяжелый жирный прием пищи прямо перед сном.']);id('timeline').innerHTML=r.map(function(x){return'<div class="rowtime"><div class="time">'+x[0]+'</div><div>'+x[1]+'</div></div>'}).join('')}
 
@@ -696,6 +700,77 @@ try {
   console.log('Safe fallback: main render error', e);
   try { loadShop(); loadInventory(); loadChanges(); renderShop(); } catch (_) {}
 }
+
+/* V13 autosave + backup */
+function autosaveKey(){return key()+':autosave:v13'}
+function collectAutosave(){
+  var data={};
+  document.querySelectorAll('input, select, textarea').forEach(function(elm){
+    if(elm.type==='file')return;
+    if(!elm.id && !elm.dataset.med && !elm.dataset.check)return;
+    var k=elm.id || (elm.dataset.med?'med:'+elm.dataset.med:'check:'+elm.dataset.check);
+    data[k]=elm.type==='checkbox'?elm.checked:elm.value;
+  });
+  return data;
+}
+function applyAutosave(){
+  var raw=localStorage.getItem(autosaveKey());
+  if(!raw)return;
+  try{
+    var data=JSON.parse(raw);
+    Object.keys(data).forEach(function(k){
+      var elm=null;
+      if(k.indexOf('med:')===0)elm=document.querySelector('[data-med="'+k.slice(4)+'"]');
+      else if(k.indexOf('check:')===0)elm=document.querySelector('[data-check="'+k.slice(6)+'"]');
+      else elm=id(k);
+      if(!elm)return;
+      if(elm.type==='checkbox')elm.checked=!!data[k];
+      else if(elm.type!=='file')elm.value=data[k];
+    });
+  }catch(e){}
+}
+function autosaveNow(){
+  try{
+    localStorage.setItem(autosaveKey(),JSON.stringify(collectAutosave()));
+    localStorage.setItem('lastSelectedDayV13',String(selectedDay));
+    if(id('autosaveStatus'))id('autosaveStatus').textContent='Автосохранено: '+new Date().toLocaleString('ru-RU');
+  }catch(e){
+    if(id('autosaveStatus'))id('autosaveStatus').textContent='Ошибка автосохранения: '+e.message;
+  }
+}
+document.addEventListener('input',function(e){
+  if(e.target && (e.target.matches('input') || e.target.matches('select') || e.target.matches('textarea'))) autosaveNow();
+});
+document.addEventListener('change',function(e){
+  if(e.target && (e.target.matches('input') || e.target.matches('select') || e.target.matches('textarea'))) autosaveNow();
+});
+window.exportBackup=function(){
+  var all={};
+  for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);all[k]=localStorage.getItem(k);}
+  var blob=new Blob([JSON.stringify(all,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='june-health-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+};
+window.importBackup=function(event){
+  var file=event.target.files&&event.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){
+    try{
+      var all=JSON.parse(reader.result);
+      Object.keys(all).forEach(function(k){localStorage.setItem(k,all[k]);});
+      alert('Backup восстановлен. Страница перезагрузится.');
+      location.reload();
+    }catch(e){alert('Не удалось восстановить backup: '+e.message);}
+  };
+  reader.readAsText(file);
+};
+var lastDay=Number(localStorage.getItem('lastSelectedDayV13')||'1');
+if(lastDay>=1&&lastDay<=30)selectedDay=lastDay;
+
+try{applyAutosave();autosaveNow();}catch(e){}
 })();
 </script>
 <script>
